@@ -10,6 +10,10 @@ export { Fixed } from './Fixed';
 export { FixedVector2 } from './FixedVector2';
 export { FixedMatrix2x2 } from './FixedMatrix2x2';
 export { FixedRect } from './FixedRect';
+export { FixedCircle } from './FixedCircle';
+
+// Geometry utilities
+export { GeometryUtils } from './GeometryUtils';
 
 // ECS Components
 export {

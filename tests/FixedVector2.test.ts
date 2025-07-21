@@ -192,6 +192,67 @@ describe('FixedVector2', () => {
     });
   });
 
+  describe('Advanced vector operations', () => {
+    test('should reflect vector across normal', () => {
+      const vector = new FixedVector2(1, 1);
+      const normal = new FixedVector2(0, 1); // Vertical normal
+      const reflected = vector.reflect(normal);
+
+      expect(reflected.x.toNumber()).toBeCloseTo(1, 5);
+      expect(reflected.y.toNumber()).toBeCloseTo(-1, 5);
+    });
+
+    test('should project vector onto another vector', () => {
+      const vector = new FixedVector2(3, 4);
+      const onto = new FixedVector2(1, 0); // Project onto X-axis
+      const projected = vector.project(onto);
+
+      expect(projected.x.toNumber()).toBeCloseTo(3, 5);
+      expect(projected.y.toNumber()).toBeCloseTo(0, 5);
+    });
+
+    test('should handle zero vector projection', () => {
+      const vector = new FixedVector2(3, 4);
+      const onto = FixedVector2.ZERO;
+      const projected = vector.project(onto);
+
+      expect(projected.equals(FixedVector2.ZERO)).toBe(true);
+    });
+
+    test('should get perpendicular component (reject)', () => {
+      const vector = new FixedVector2(3, 4);
+      const onto = new FixedVector2(1, 0); // Reject from X-axis
+      const rejected = vector.reject(onto);
+
+      expect(rejected.x.toNumber()).toBeCloseTo(0, 5);
+      expect(rejected.y.toNumber()).toBeCloseTo(4, 5);
+    });
+
+    test('should rotate vector by angle', () => {
+      const vector = new FixedVector2(1, 0);
+      const rotated = vector.rotate(Fixed.PI.divide(new Fixed(2))); // 90 degrees
+
+      expect(rotated.x.toNumber()).toBeCloseTo(0, 5);
+      expect(rotated.y.toNumber()).toBeCloseTo(1, 5);
+    });
+
+    test('should get perpendicular vector', () => {
+      const vector = new FixedVector2(1, 0);
+      const perp = vector.perpendicular();
+
+      expect(perp.x.toNumber()).toBeCloseTo(0, 5);
+      expect(perp.y.toNumber()).toBeCloseTo(1, 5);
+    });
+
+    test('should get right perpendicular vector', () => {
+      const vector = new FixedVector2(1, 0);
+      const perpRight = vector.perpendicularRight();
+
+      expect(perpRight.x.toNumber()).toBeCloseTo(0, 5);
+      expect(perpRight.y.toNumber()).toBeCloseTo(-1, 5);
+    });
+  });
+
   describe('Static Constants', () => {
     test('should have correct static constants', () => {
       expect(FixedVector2.ZERO.equals(new FixedVector2(0, 0))).toBe(true);

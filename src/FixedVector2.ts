@@ -287,6 +287,86 @@ export class FixedVector2 {
   }
 
   /**
+   * Reflect this vector across a normal vector
+   * 沿法向量反射此向量
+   *
+   * @param normal - The normal vector to reflect across (should be normalized)
+   * @returns The reflected vector
+   */
+  reflect(normal: FixedVector2): FixedVector2 {
+    // Formula: v - 2 * (v · n) * n
+    const dotProduct = this.dot(normal);
+    const reflection = normal.multiply(dotProduct.multiply(new Fixed(2)));
+    return this.subtract(reflection);
+  }
+
+  /**
+   * Project this vector onto another vector
+   * 将此向量投影到另一个向量上
+   *
+   * @param onto - The vector to project onto
+   * @returns The projected vector
+   */
+  project(onto: FixedVector2): FixedVector2 {
+    // Formula: (v · u) / (u · u) * u
+    const dotProduct = this.dot(onto);
+    const ontoLengthSquared = onto.dot(onto);
+
+    if (ontoLengthSquared.equals(Fixed.ZERO)) {
+      return FixedVector2.ZERO;
+    }
+
+    const scalar = dotProduct.divide(ontoLengthSquared);
+    return onto.multiply(scalar);
+  }
+
+  /**
+   * Get the component of this vector perpendicular to another vector
+   * 获取此向量垂直于另一个向量的分量
+   *
+   * @param onto - The vector to get the perpendicular component relative to
+   * @returns The perpendicular component
+   */
+  reject(onto: FixedVector2): FixedVector2 {
+    // Formula: v - project(v, onto)
+    return this.subtract(this.project(onto));
+  }
+
+  /**
+   * Rotate this vector by the given angle in radians
+   * 将此向量按给定角度（弧度）旋转
+   *
+   * @param angle - Angle in radians
+   * @returns The rotated vector
+   */
+  rotate(angle: Fixed | number): FixedVector2 {
+    const a = angle instanceof Fixed ? angle : new Fixed(angle);
+    const cos = a.cos();
+    const sin = a.sin();
+
+    const newX = this.x.multiply(cos).subtract(this.y.multiply(sin));
+    const newY = this.x.multiply(sin).add(this.y.multiply(cos));
+
+    return new FixedVector2(newX, newY);
+  }
+
+  /**
+   * Get a vector perpendicular to this one (rotated 90 degrees counter-clockwise)
+   * 获取垂直于此向量的向量（逆时针旋转90度）
+   */
+  perpendicular(): FixedVector2 {
+    return new FixedVector2(this.y.negate(), this.x);
+  }
+
+  /**
+   * Get the right perpendicular vector (rotated 90 degrees clockwise)
+   * 获取右垂直向量（顺时针旋转90度）
+   */
+  perpendicularRight(): FixedVector2 {
+    return new FixedVector2(this.y, this.x.negate());
+  }
+
+  /**
    * Create a vector from angle and magnitude
    * 从角度和大小创建向量
    */
