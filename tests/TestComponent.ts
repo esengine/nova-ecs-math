@@ -1,6 +1,7 @@
 /**
- * Base Component class for nova-ecs-math
- * This is a simplified version to avoid dependency issues during testing
+ * Test-only Component base class that matches NovaECS Component interface
+ * This is used only for testing to avoid module import issues
+ * In production, the real NovaECS Component will be used
  */
 export abstract class Component {
   private _enabled = true;

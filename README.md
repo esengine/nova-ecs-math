@@ -17,9 +17,10 @@ For complete API documentation, visit: [https://esengine.github.io/nova-ecs-math
 
 ## Features | 特性
 
-- **Fixed-point arithmetic | 定点数运算**: Deterministic mathematical operations | 确定性数学运算
+- **Fixed-point arithmetic | 定点数运算**: Deterministic mathematical operations including square root | 确定性数学运算，包括平方根
 - **Vector mathematics | 向量数学**: 2D vector operations with fixed-point precision | 基于定点数精度的2D向量运算
-- **ECS Components | ECS组件**: Ready-to-use components for [NovaECS](https://github.com/esengine/NovaECS) | 为 [NovaECS](https://github.com/esengine/NovaECS) 准备的即用型组件
+- **Performance optimized | 性能优化**: In-place operations and object caching for reduced GC pressure | 就地操作和对象缓存以减少GC压力
+- **ECS Components | ECS组件**: Ready-to-use components for [NovaECS](https://github.com/esengine/NovaECS) with object pooling support | 为 [NovaECS](https://github.com/esengine/NovaECS) 准备的即用型组件，支持对象池
 - **TypeScript support | TypeScript支持**: Full type safety and IntelliSense | 完整的类型安全和智能提示
 - **Zero dependencies | 零依赖**: Lightweight and efficient | 轻量且高效
 
@@ -49,6 +50,19 @@ const newPosition = position.add(velocity);
 const world = new World();
 const entity = world.createEntity()
   .addComponent(new FixedPositionComponent(100, 200));
+
+// Object pooling for better performance | 对象池以提高性能
+import { ComponentPool } from '@esengine/nova-ecs';
+
+const positionPool = new ComponentPool(
+  () => new FixedPositionComponent(),
+  { initialSize: 50, maxSize: 200 }
+);
+
+const pooledPosition = positionPool.acquire();
+pooledPosition.setPosition(100, 200);
+// ... use the component
+positionPool.release(pooledPosition); // Return to pool when done
 ```
 
 ## Core Classes | 核心类
@@ -62,6 +76,16 @@ Represents a fixed-point number with deterministic arithmetic operations.
 ```typescript
 const fixed = new Fixed(3.14159);
 const result = fixed.add(new Fixed(2.0)).multiply(new Fixed(0.5));
+
+// Deterministic square root | 确定性平方根
+const sqrt = new Fixed(4).sqrt(); // 2.0
+
+// Performance optimized in-place operations | 性能优化的就地操作
+const value = new Fixed(10);
+value.addInPlace(new Fixed(5)).multiplyInPlace(new Fixed(2)); // value is now 30
+
+// Cached values for better performance | 缓存值以提高性能
+const cached = Fixed.cached(1.5); // Reuses same instance for common values
 ```
 
 ### FixedVector2 Class | FixedVector2类
@@ -73,7 +97,15 @@ Represents a 2D vector using fixed-point arithmetic.
 ```typescript
 const vector = new FixedVector2(10, 20);
 const normalized = vector.normalize();
-const magnitude = vector.magnitude();
+const magnitude = vector.magnitude(); // Uses deterministic sqrt
+
+// Performance optimized in-place operations | 性能优化的就地操作
+const velocity = new FixedVector2(5, 3);
+velocity.addInPlace(new FixedVector2(1, -1)); // velocity is now (6, 2)
+
+// Object reuse for better performance | 对象重用以提高性能
+const reusableVector = new FixedVector2();
+reusableVector.set(10, 20).multiplyInPlace(2); // (20, 40)
 ```
 
 ### Components | 组件
@@ -130,6 +162,12 @@ The library includes comprehensive tests covering:
 - Component functionality | 组件功能
 - Serialization/deserialization | 序列化/反序列化
 - Edge cases and error handling | 边界情况和错误处理
+- Performance optimizations | 性能优化
+- Deterministic calculations | 确定性计算
+
+**Note**: Component tests use test-specific implementations that match the NovaECS Component interface exactly, ensuring our components work correctly with the real NovaECS framework while avoiding module import issues during testing.
+
+**注意**: 组件测试使用与NovaECS Component接口完全匹配的测试专用实现，确保我们的组件与真实的NovaECS框架正确工作，同时避免测试期间的模块导入问题。
 
 Run tests with coverage:
 

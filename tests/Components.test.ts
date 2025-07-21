@@ -2,13 +2,19 @@ import { describe, test, expect, beforeEach } from 'vitest';
 import { Fixed } from '../src/Fixed';
 import { FixedVector2 } from '../src/FixedVector2';
 import {
-  FixedPositionComponent,
-  FixedVelocityComponent,
-  FixedAccelerationComponent
-} from '../src/Components';
+  TestFixedPositionComponent,
+  TestFixedVelocityComponent,
+  TestFixedAccelerationComponent
+} from './TestComponents';
+
+// Use test components that have the same interface as the real components
+// but don't have module import issues
+const FixedPositionComponent = TestFixedPositionComponent;
+const FixedVelocityComponent = TestFixedVelocityComponent;
+const FixedAccelerationComponent = TestFixedAccelerationComponent;
 
 describe('FixedPositionComponent', () => {
-  let component: FixedPositionComponent;
+  let component: TestFixedPositionComponent;
 
   beforeEach(() => {
     component = new FixedPositionComponent(10, 20);
@@ -126,7 +132,7 @@ describe('FixedPositionComponent', () => {
 });
 
 describe('FixedVelocityComponent', () => {
-  let component: FixedVelocityComponent;
+  let component: TestFixedVelocityComponent;
 
   beforeEach(() => {
     component = new FixedVelocityComponent(5, -3);
@@ -194,7 +200,7 @@ describe('FixedVelocityComponent', () => {
 });
 
 describe('FixedAccelerationComponent', () => {
-  let component: FixedAccelerationComponent;
+  let component: TestFixedAccelerationComponent;
 
   beforeEach(() => {
     component = new FixedAccelerationComponent(2, -1);

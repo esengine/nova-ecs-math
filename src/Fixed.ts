@@ -6,6 +6,11 @@ export class Fixed {
   private static readonly SCALE = 1000000;
   private _value: number;
 
+  // Cache for commonly used values to reduce object creation
+  // 缓存常用值以减少对象创建
+  private static readonly _cache = new Map<number, Fixed>();
+  private static readonly MAX_CACHE_SIZE = 1000;
+
   /**
    * Create a new Fixed-point number
    * 创建新的定点数
@@ -33,11 +38,41 @@ export class Fixed {
   }
 
   /**
+   * Create a cached Fixed number for commonly used values
+   * 为常用值创建缓存的定点数
+   */
+  static cached(value: number): Fixed {
+    const rawValue = Math.round(value * Fixed.SCALE);
+
+    if (Fixed._cache.has(rawValue)) {
+      return Fixed._cache.get(rawValue)!;
+    }
+
+    if (Fixed._cache.size >= Fixed.MAX_CACHE_SIZE) {
+      // Clear cache when it gets too large
+      Fixed._cache.clear();
+    }
+
+    const fixed = Fixed.fromRaw(rawValue);
+    Fixed._cache.set(rawValue, fixed);
+    return fixed;
+  }
+
+  /**
    * Add two fixed-point numbers
    * 两个定点数相加
    */
   add(other: Fixed): Fixed {
     return Fixed.fromRaw(this._value + other._value);
+  }
+
+  /**
+   * Add in place (modifies this instance for better performance)
+   * 就地相加（修改当前实例以提高性能）
+   */
+  addInPlace(other: Fixed): Fixed {
+    this._value += other._value;
+    return this;
   }
 
   /**
@@ -49,11 +84,29 @@ export class Fixed {
   }
 
   /**
+   * Subtract in place (modifies this instance for better performance)
+   * 就地相减（修改当前实例以提高性能）
+   */
+  subtractInPlace(other: Fixed): Fixed {
+    this._value -= other._value;
+    return this;
+  }
+
+  /**
    * Multiply two fixed-point numbers
    * 两个定点数相乘
    */
   multiply(other: Fixed): Fixed {
     return Fixed.fromRaw(Math.round((this._value * other._value) / Fixed.SCALE));
+  }
+
+  /**
+   * Multiply in place (modifies this instance for better performance)
+   * 就地相乘（修改当前实例以提高性能）
+   */
+  multiplyInPlace(other: Fixed): Fixed {
+    this._value = Math.round((this._value * other._value) / Fixed.SCALE);
+    return this;
   }
 
   /**
@@ -65,6 +118,18 @@ export class Fixed {
       throw new Error('Division by zero');
     }
     return Fixed.fromRaw(Math.round((this._value * Fixed.SCALE) / other._value));
+  }
+
+  /**
+   * Divide in place (modifies this instance for better performance)
+   * 就地相除（修改当前实例以提高性能）
+   */
+  divideInPlace(other: Fixed): Fixed {
+    if (other._value === 0) {
+      throw new Error('Division by zero');
+    }
+    this._value = Math.round((this._value * Fixed.SCALE) / other._value);
+    return this;
   }
 
   /**
@@ -81,6 +146,51 @@ export class Fixed {
    */
   negate(): Fixed {
     return Fixed.fromRaw(-this._value);
+  }
+
+  /**
+   * Calculate square root using Newton's method for deterministic results
+   * 使用牛顿迭代法计算平方根，确保确定性结果
+   */
+  sqrt(): Fixed {
+    if (this.lessThan(Fixed.ZERO)) {
+      throw new Error('Square root of negative number');
+    }
+
+    if (this.equals(Fixed.ZERO)) {
+      return Fixed.ZERO;
+    }
+
+    if (this.equals(Fixed.ONE)) {
+      return Fixed.ONE;
+    }
+
+    // Newton's method: x_{n+1} = (x_n + a/x_n) / 2
+    // Start with a reasonable initial guess
+    let x = this.greaterThan(Fixed.ONE) ? this.divide(Fixed.TWO) : Fixed.ONE;
+    let prev: Fixed;
+
+    // Iterate until convergence (max 20 iterations for safety)
+    for (let i = 0; i < 20; i++) {
+      prev = x;
+      // x = (x + this/x) / 2
+      x = x.add(this.divide(x)).divide(Fixed.TWO);
+
+      // Check for convergence (difference less than 1/SCALE)
+      if (x.subtract(prev).abs().rawValue <= 1) {
+        break;
+      }
+    }
+
+    return x;
+  }
+
+  /**
+   * Static square root method
+   * 静态平方根方法
+   */
+  static sqrt(value: Fixed): Fixed {
+    return value.sqrt();
   }
 
   /**

@@ -17,4 +17,4 @@ export {
 } from './Components';
 
 // Re-export types for convenience
-export { Component } from './BaseComponent';
+export type { Component, ComponentPool } from '@esengine/nova-ecs';

@@ -65,9 +65,15 @@ describe('FixedVector2', () => {
       const vector = new FixedVector2(6, 9);
       const scalar = new Fixed(3);
       const result = vector.divide(scalar);
-      
+
       expect(result.x.toNumber()).toBe(2);
       expect(result.y.toNumber()).toBe(3);
+    });
+
+    test('should throw error on division by zero', () => {
+      const vector = new FixedVector2(6, 9);
+      expect(() => vector.divide(0)).toThrow('Division by zero vector');
+      expect(() => vector.divide(Fixed.ZERO)).toThrow('Division by zero vector');
     });
   });
 
@@ -194,6 +200,82 @@ describe('FixedVector2', () => {
       expect(FixedVector2.DOWN.equals(new FixedVector2(0, -1))).toBe(true);
       expect(FixedVector2.LEFT.equals(new FixedVector2(-1, 0))).toBe(true);
       expect(FixedVector2.RIGHT.equals(new FixedVector2(1, 0))).toBe(true);
+    });
+  });
+
+  describe('In-Place Operations', () => {
+    test('should add in place correctly', () => {
+      const a = new FixedVector2(2, 3);
+      const b = new FixedVector2(1, -1);
+      const result = a.addInPlace(b);
+
+      expect(result).toBe(a); // Should return same instance
+      expect(a.x.toNumber()).toBe(3);
+      expect(a.y.toNumber()).toBe(2);
+    });
+
+    test('should subtract in place correctly', () => {
+      const a = new FixedVector2(5, 3);
+      const b = new FixedVector2(2, 1);
+      const result = a.subtractInPlace(b);
+
+      expect(result).toBe(a);
+      expect(a.x.toNumber()).toBe(3);
+      expect(a.y.toNumber()).toBe(2);
+    });
+
+    test('should multiply in place correctly', () => {
+      const vector = new FixedVector2(2, 3);
+      const result = vector.multiplyInPlace(2);
+
+      expect(result).toBe(vector);
+      expect(vector.x.toNumber()).toBe(4);
+      expect(vector.y.toNumber()).toBe(6);
+    });
+
+    test('should divide in place correctly', () => {
+      const vector = new FixedVector2(6, 9);
+      const result = vector.divideInPlace(3);
+
+      expect(result).toBe(vector);
+      expect(vector.x.toNumber()).toBe(2);
+      expect(vector.y.toNumber()).toBe(3);
+    });
+
+    test('should throw error on division by zero in place', () => {
+      const vector = new FixedVector2(6, 9);
+      expect(() => vector.divideInPlace(0)).toThrow('Division by zero vector');
+    });
+  });
+
+  describe('Object Reuse Methods', () => {
+    test('should set from another vector', () => {
+      const a = new FixedVector2(1, 2);
+      const b = new FixedVector2(3, 4);
+
+      const result = a.setFrom(b);
+
+      expect(result).toBe(a);
+      expect(a.x.toNumber()).toBe(3);
+      expect(a.y.toNumber()).toBe(4);
+    });
+
+    test('should set from coordinates', () => {
+      const vector = new FixedVector2(1, 2);
+      const result = vector.set(5, 6);
+
+      expect(result).toBe(vector);
+      expect(vector.x.toNumber()).toBe(5);
+      expect(vector.y.toNumber()).toBe(6);
+    });
+
+    test('should reset to zero', () => {
+      const vector = new FixedVector2(5, 10);
+      const result = vector.reset();
+
+      expect(result).toBe(vector);
+      expect(vector.x.equals(Fixed.ZERO)).toBe(true);
+      expect(vector.y.equals(Fixed.ZERO)).toBe(true);
     });
   });
 

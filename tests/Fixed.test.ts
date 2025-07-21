@@ -74,6 +74,34 @@ describe('Fixed', () => {
       expect(negative.toNumber()).toBe(-2.5);
       expect(negative.negate().toNumber()).toBe(2.5);
     });
+
+    test('should calculate square root correctly', () => {
+      const four = new Fixed(4);
+      const sqrt = four.sqrt();
+      expect(sqrt.toNumber()).toBeCloseTo(2, 5);
+
+      const nine = new Fixed(9);
+      const sqrt9 = nine.sqrt();
+      expect(sqrt9.toNumber()).toBeCloseTo(3, 5);
+
+      const two = new Fixed(2);
+      const sqrt2 = two.sqrt();
+      expect(sqrt2.toNumber()).toBeCloseTo(Math.sqrt(2), 4);
+    });
+
+    test('should handle square root edge cases', () => {
+      expect(Fixed.ZERO.sqrt().equals(Fixed.ZERO)).toBe(true);
+      expect(Fixed.ONE.sqrt().equals(Fixed.ONE)).toBe(true);
+
+      const negative = new Fixed(-1);
+      expect(() => negative.sqrt()).toThrow('Square root of negative number');
+    });
+
+    test('should have static sqrt method', () => {
+      const four = new Fixed(4);
+      const sqrt = Fixed.sqrt(four);
+      expect(sqrt.toNumber()).toBeCloseTo(2, 5);
+    });
   });
 
   describe('Comparison Operations', () => {
@@ -149,6 +177,62 @@ describe('Fixed', () => {
       expect(Fixed.E.toNumber()).toBeCloseTo(Math.E, 5);
       expect(Fixed.HALF.toNumber()).toBe(0.5);
       expect(Fixed.TWO.toNumber()).toBe(2);
+    });
+  });
+
+  describe('In-Place Operations', () => {
+    test('should add in place correctly', () => {
+      const a = new Fixed(2.5);
+      const b = new Fixed(1.5);
+      const result = a.addInPlace(b);
+
+      expect(result).toBe(a); // Should return same instance
+      expect(a.toNumber()).toBe(4.0);
+    });
+
+    test('should subtract in place correctly', () => {
+      const a = new Fixed(5.0);
+      const b = new Fixed(2.0);
+      const result = a.subtractInPlace(b);
+
+      expect(result).toBe(a);
+      expect(a.toNumber()).toBe(3.0);
+    });
+
+    test('should multiply in place correctly', () => {
+      const a = new Fixed(3.0);
+      const b = new Fixed(2.0);
+      const result = a.multiplyInPlace(b);
+
+      expect(result).toBe(a);
+      expect(a.toNumber()).toBe(6.0);
+    });
+
+    test('should divide in place correctly', () => {
+      const a = new Fixed(6.0);
+      const b = new Fixed(2.0);
+      const result = a.divideInPlace(b);
+
+      expect(result).toBe(a);
+      expect(a.toNumber()).toBe(3.0);
+    });
+
+    test('should throw error on division by zero in place', () => {
+      const a = new Fixed(5.0);
+      const b = new Fixed(0.0);
+      expect(() => a.divideInPlace(b)).toThrow('Division by zero');
+    });
+  });
+
+  describe('Caching', () => {
+    test('should create cached values', () => {
+      const a = Fixed.cached(1.5);
+      const b = Fixed.cached(1.5);
+
+      expect(a.toNumber()).toBe(1.5);
+      expect(b.toNumber()).toBe(1.5);
+      // Note: cached values should be the same instance for performance
+      expect(a).toBe(b);
     });
   });
 

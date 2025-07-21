@@ -29,11 +29,31 @@ export class FixedVector2 {
   }
 
   /**
+   * Add in place (modifies this instance for better performance)
+   * 就地相加（修改当前实例以提高性能）
+   */
+  addInPlace(other: FixedVector2): FixedVector2 {
+    this.x.addInPlace(other.x);
+    this.y.addInPlace(other.y);
+    return this;
+  }
+
+  /**
    * Subtract two vectors
    * 两个向量相减
    */
   subtract(other: FixedVector2): FixedVector2 {
     return new FixedVector2(this.x.subtract(other.x), this.y.subtract(other.y));
+  }
+
+  /**
+   * Subtract in place (modifies this instance for better performance)
+   * 就地相减（修改当前实例以提高性能）
+   */
+  subtractInPlace(other: FixedVector2): FixedVector2 {
+    this.x.subtractInPlace(other.x);
+    this.y.subtractInPlace(other.y);
+    return this;
   }
 
   /**
@@ -46,12 +66,40 @@ export class FixedVector2 {
   }
 
   /**
+   * Multiply in place (modifies this instance for better performance)
+   * 就地相乘（修改当前实例以提高性能）
+   */
+  multiplyInPlace(scalar: Fixed | number): FixedVector2 {
+    const scalarFixed = scalar instanceof Fixed ? scalar : new Fixed(scalar);
+    this.x.multiplyInPlace(scalarFixed);
+    this.y.multiplyInPlace(scalarFixed);
+    return this;
+  }
+
+  /**
    * Divide vector by a scalar
    * 向量除以标量
    */
   divide(scalar: Fixed | number): FixedVector2 {
     const scalarFixed = scalar instanceof Fixed ? scalar : new Fixed(scalar);
+    if (scalarFixed.equals(Fixed.ZERO)) {
+      throw new Error('Division by zero vector');
+    }
     return new FixedVector2(this.x.divide(scalarFixed), this.y.divide(scalarFixed));
+  }
+
+  /**
+   * Divide in place (modifies this instance for better performance)
+   * 就地相除（修改当前实例以提高性能）
+   */
+  divideInPlace(scalar: Fixed | number): FixedVector2 {
+    const scalarFixed = scalar instanceof Fixed ? scalar : new Fixed(scalar);
+    if (scalarFixed.equals(Fixed.ZERO)) {
+      throw new Error('Division by zero vector');
+    }
+    this.x.divideInPlace(scalarFixed);
+    this.y.divideInPlace(scalarFixed);
+    return this;
   }
 
   /**
@@ -60,7 +108,7 @@ export class FixedVector2 {
    */
   magnitude(): Fixed {
     const sqrMagnitude = this.x.multiply(this.x).add(this.y.multiply(this.y));
-    return new Fixed(Math.sqrt(sqrMagnitude.toNumber()));
+    return sqrMagnitude.sqrt();
   }
 
   /**
@@ -161,6 +209,36 @@ export class FixedVector2 {
    */
   clone(): FixedVector2 {
     return new FixedVector2(this.x, this.y);
+  }
+
+  /**
+   * Set this vector's components from another vector (for reusing objects)
+   * 从另一个向量设置此向量的分量（用于重用对象）
+   */
+  setFrom(other: FixedVector2): FixedVector2 {
+    this.x = other.x;
+    this.y = other.y;
+    return this;
+  }
+
+  /**
+   * Set this vector's components from coordinates (for reusing objects)
+   * 从坐标设置此向量的分量（用于重用对象）
+   */
+  set(x: Fixed | number, y: Fixed | number): FixedVector2 {
+    this.x = x instanceof Fixed ? x : new Fixed(x);
+    this.y = y instanceof Fixed ? y : new Fixed(y);
+    return this;
+  }
+
+  /**
+   * Reset this vector to zero (for object pooling)
+   * 将此向量重置为零（用于对象池）
+   */
+  reset(): FixedVector2 {
+    this.x = Fixed.ZERO;
+    this.y = Fixed.ZERO;
+    return this;
   }
 
   // Static constants
