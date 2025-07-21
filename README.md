@@ -20,6 +20,8 @@ For complete API documentation, visit: [https://esengine.github.io/nova-ecs-math
 - **Fixed-point arithmetic | 定点数运算**: Deterministic mathematical operations including trigonometric, logarithmic, and power functions | 确定性数学运算，包括三角函数、对数函数和幂函数
 - **Vector mathematics | 向量数学**: 2D vector operations with fixed-point precision | 基于定点数精度的2D向量运算
 - **Matrix transformations | 矩阵变换**: 2x2 matrices for rotation, scaling, shearing, and general linear transformations | 用于旋转、缩放、剪切和一般线性变换的2x2矩阵
+- **Geometric shapes | 几何形状**: Rectangle and circle classes with collision detection and intersection testing | 矩形和圆形类，支持碰撞检测和相交测试
+- **Geometry utilities | 几何工具**: Advanced geometric calculations including polygon operations, line intersections, and bounding calculations | 高级几何计算，包括多边形运算、直线相交和边界计算
 - **Complete math library | 完整数学库**: Square root, trigonometry, inverse trigonometry, exponentials, and utility functions | 平方根、三角函数、反三角函数、指数函数和实用函数
 - **Performance optimized | 性能优化**: In-place operations and object caching for reduced GC pressure | 就地操作和对象缓存以减少GC压力
 - **ECS ready | ECS就绪**: Optional components for Entity-Component-System architectures | 为实体组件系统架构提供可选组件
@@ -40,7 +42,15 @@ npm install @esengine/nova-ecs-math @esengine/nova-ecs
 ## Quick Start | 快速开始
 
 ```typescript
-import { Fixed, FixedVector2, FixedMatrix2x2, FixedPositionComponent } from '@esengine/nova-ecs-math';
+import {
+  Fixed,
+  FixedVector2,
+  FixedMatrix2x2,
+  FixedRect,
+  FixedCircle,
+  GeometryUtils,
+  FixedPositionComponent
+} from '@esengine/nova-ecs-math';
 
 // Create fixed-point numbers | 创建定点数
 const a = new Fixed(3.14159);
@@ -56,6 +66,14 @@ const newPosition = position.add(velocity);
 const rotation = FixedMatrix2x2.rotation(Fixed.PI_4); // 45 degree rotation
 const scaling = FixedMatrix2x2.scaling(new Fixed(2)); // 2x uniform scaling
 const transformed = rotation.transformVector(position);
+
+// Create geometric shapes | 创建几何形状
+const rect = new FixedRect(0, 0, 100, 50);           // Rectangle
+const circle = new FixedCircle(new FixedVector2(25, 25), new Fixed(15)); // Circle
+
+// Collision detection | 碰撞检测
+const isColliding = circle.intersectsRect(rect);
+const distance = GeometryUtils.distance(position, circle.center);
 
 // Create components for ECS systems | 为ECS系统创建组件
 const positionComponent = new FixedPositionComponent(100, 200);
@@ -169,6 +187,148 @@ const scaledPoint = scaling.transformVector(point);
 const isIdentity = matrix.isIdentity();
 const transposed = matrix.transpose();
 const matrixArray = matrix.toArray(); // [m00, m01, m10, m11]
+```
+
+### FixedRect Class | FixedRect类
+
+Represents a rectangle using fixed-point arithmetic for deterministic geometric calculations.
+
+表示使用定点算术的矩形，用于确定性几何计算。
+
+```typescript
+// Create rectangles | 创建矩形
+const rect = new FixedRect(10, 20, 100, 50); // x, y, width, height
+const square = new FixedRect(0, 0, 50, 50);
+
+// Rectangle properties | 矩形属性
+const left = rect.left;     // 10
+const right = rect.right;   // 110
+const top = rect.top;       // 20
+const bottom = rect.bottom; // 70
+const center = rect.center; // FixedVector2(60, 45)
+
+// Rectangle operations | 矩形运算
+const area = rect.area();           // 5000
+const perimeter = rect.perimeter(); // 300
+const isEmpty = rect.isEmpty();     // false
+
+// Point and rectangle tests | 点和矩形测试
+const point = new FixedVector2(50, 40);
+const contains = rect.contains(point);              // true
+const containsRect = rect.containsRect(square);     // false
+const intersects = rect.intersects(square);         // true
+const intersection = rect.intersection(square);     // FixedRect or null
+
+// Rectangle transformations | 矩形变换
+const expanded = rect.expand(new Fixed(10));        // Expand by 10 units
+const moved = rect.translate(new FixedVector2(5, 5)); // Move by (5, 5)
+const scaled = rect.scale(new Fixed(2));            // Scale by 2x
+```
+
+### FixedCircle Class | FixedCircle类
+
+Represents a circle using fixed-point arithmetic for deterministic geometric calculations.
+
+表示使用定点算术的圆形，用于确定性几何计算。
+
+```typescript
+// Create circles | 创建圆形
+const circle = new FixedCircle(new FixedVector2(0, 0), new Fixed(10)); // center, radius
+const circle2 = new FixedCircle(5, 5, 8); // x, y, radius
+
+// Circle properties | 圆形属性
+const center = circle.center;           // FixedVector2(0, 0)
+const radius = circle.radius;           // 10
+const diameter = circle.diameter;       // 20
+const area = circle.area();            // π * 100
+const circumference = circle.circumference(); // 2π * 10
+
+// Point and shape tests | 点和形状测试
+const point = new FixedVector2(5, 0);
+const contains = circle.contains(point);        // true
+const containsCircle = circle.containsCircle(circle2); // false
+const intersectsCircle = circle.intersects(circle2);   // true
+
+// Rectangle intersection | 矩形相交
+const rect = new FixedRect(-5, -5, 10, 10);
+const intersectsRect = circle.intersectsRect(rect); // true
+
+// Circle transformations | 圆形变换
+const moved = circle.translate(new FixedVector2(10, 5)); // Move center
+const scaled = circle.scale(new Fixed(2));              // Scale radius
+const boundingRect = circle.getBoundingRect();          // Get bounding rectangle
+
+// Distance calculations | 距离计算
+const distance = circle.distanceToPoint(point);         // Distance from edge to point
+const closestPoint = circle.closestPointTo(point);      // Closest point on circle
+```
+
+### GeometryUtils Class | GeometryUtils类
+
+Utility functions for advanced geometric calculations using fixed-point arithmetic.
+
+使用定点算术进行高级几何计算的实用函数。
+
+```typescript
+import { GeometryUtils, FixedVector2, FixedRect, FixedCircle } from '@esengine/nova-ecs-math';
+
+// Distance calculations | 距离计算
+const point1 = new FixedVector2(0, 0);
+const point2 = new FixedVector2(3, 4);
+const distance = GeometryUtils.distance(point1, point2);         // 5
+const distanceSq = GeometryUtils.distanceSquared(point1, point2); // 25 (faster)
+
+// Triangle operations | 三角形运算
+const a = new FixedVector2(0, 0);
+const b = new FixedVector2(10, 0);
+const c = new FixedVector2(5, 10);
+const testPoint = new FixedVector2(5, 3);
+
+const inTriangle = GeometryUtils.pointInTriangle(testPoint, a, b, c); // true
+const triangleArea = GeometryUtils.triangleArea(a, b, c);             // 50
+
+// Line operations | 直线运算
+const lineStart = new FixedVector2(0, 0);
+const lineEnd = new FixedVector2(10, 10);
+const point = new FixedVector2(5, 3);
+
+const closestOnLine = GeometryUtils.closestPointOnLine(point, lineStart, lineEnd);
+const distanceToLine = GeometryUtils.distanceToLine(point, lineStart, lineEnd);
+const onSegment = GeometryUtils.pointOnLineSegment(point, lineStart, lineEnd);
+
+// Polygon operations | 多边形运算
+const polygon = [
+  new FixedVector2(0, 0),
+  new FixedVector2(10, 0),
+  new FixedVector2(10, 10),
+  new FixedVector2(0, 10)
+];
+
+const inPolygon = GeometryUtils.pointInPolygon(testPoint, polygon);   // true
+const polygonArea = GeometryUtils.polygonArea(polygon);               // 100
+const centroid = GeometryUtils.polygonCentroid(polygon);              // FixedVector2(5, 5)
+
+// Circle-line intersection | 圆线相交
+const circle = new FixedCircle(new FixedVector2(5, 5), new Fixed(3));
+const intersections = GeometryUtils.circleLineIntersection(
+  circle, lineStart, lineEnd
+); // Array of intersection points
+
+// Rectangle-circle intersection | 矩形圆相交
+const rect = new FixedRect(0, 0, 10, 10);
+const rectCircleIntersect = GeometryUtils.rectCircleIntersection(rect, circle);
+
+// Angle calculations | 角度计算
+const angle1 = GeometryUtils.angleBetweenPoints(point1, point2);      // Angle from point1 to point2
+const angle2 = GeometryUtils.angleBetweenVectors(                     // Angle between vectors
+  new FixedVector2(1, 0),
+  new FixedVector2(0, 1)
+); // π/2
+
+// Bounding operations | 边界运算
+const points = [point1, point2, testPoint];
+const boundingRect = GeometryUtils.getBoundingRect(points);           // Smallest rect containing all points
+const boundingCircle = GeometryUtils.getBoundingCircle(points);       // Smallest circle containing all points
 ```
 
 ### Components | 组件
