@@ -1,6 +1,6 @@
 {
   "name": "@esengine/nova-ecs-math",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Comprehensive fixed-point mathematics library for deterministic calculations in games and simulations",
   "keywords": [
     "ecs",
