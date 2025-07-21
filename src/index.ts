@@ -8,6 +8,7 @@
 // Core fixed-point math classes
 export { Fixed } from './Fixed';
 export { FixedVector2 } from './FixedVector2';
+export { FixedMatrix2x2 } from './FixedMatrix2x2';
 
 // ECS Components
 export {

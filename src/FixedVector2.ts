@@ -255,13 +255,15 @@ export class FixedVector2 {
    */
   static lerp(a: FixedVector2, b: FixedVector2, t: Fixed | number): FixedVector2 {
     const tFixed = t instanceof Fixed ? t : new Fixed(t);
-    const oneMinusT = Fixed.ONE.subtract(tFixed);
-    return a.multiply(oneMinusT).add(b.multiply(tFixed));
+    return new FixedVector2(
+      Fixed.lerp(a.x, b.x, tFixed),
+      Fixed.lerp(a.y, b.y, tFixed)
+    );
   }
 
   /**
-   * Calculate angle between two vectors in radians
-   * 计算两个向量之间的角度（弧度）
+   * Calculate angle between two vectors in radians using deterministic math
+   * 使用确定性数学计算两个向量之间的角度（弧度）
    */
   static angle(a: FixedVector2, b: FixedVector2): Fixed {
     const dot = a.dot(b);
@@ -270,6 +272,28 @@ export class FixedVector2 {
       return Fixed.ZERO;
     }
     const cosAngle = dot.divide(magnitudes);
-    return new Fixed(Math.acos(Math.max(-1, Math.min(1, cosAngle.toNumber()))));
+
+    // Clamp to [-1, 1] to avoid domain errors
+    const clampedCos = cosAngle.clamp(new Fixed(-1), Fixed.ONE);
+    return clampedCos.acos();
+  }
+
+  /**
+   * Get the angle of this vector from the positive X axis
+   * 获取此向量相对于正X轴的角度
+   */
+  angle(): Fixed {
+    return Fixed.atan2(this.y, this.x);
+  }
+
+  /**
+   * Create a vector from angle and magnitude
+   * 从角度和大小创建向量
+   */
+  static fromAngle(angle: Fixed, magnitude: Fixed = Fixed.ONE): FixedVector2 {
+    return new FixedVector2(
+      angle.cos().multiply(magnitude),
+      angle.sin().multiply(magnitude)
+    );
   }
 }

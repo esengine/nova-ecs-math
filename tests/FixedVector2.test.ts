@@ -299,20 +299,49 @@ describe('FixedVector2', () => {
       expect(result.y.toNumber()).toBe(5);
     });
 
-    test('should calculate angle between vectors', () => {
+    test('should calculate angle between vectors using deterministic math', () => {
       const a = new FixedVector2(1, 0);
       const b = new FixedVector2(0, 1);
       const angle = FixedVector2.angle(a, b);
-      
-      expect(angle.toNumber()).toBeCloseTo(Math.PI / 2, 5);
+
+      expect(angle.toNumber()).toBeCloseTo(Math.PI / 2, 4);
     });
 
     test('should handle zero magnitude in angle calculation', () => {
       const a = new FixedVector2(0, 0);
       const b = new FixedVector2(1, 0);
       const angle = FixedVector2.angle(a, b);
-      
+
       expect(angle.equals(Fixed.ZERO)).toBe(true);
+    });
+
+    test('should get vector angle from positive X axis', () => {
+      const right = new FixedVector2(1, 0);
+      const up = new FixedVector2(0, 1);
+      const left = new FixedVector2(-1, 0);
+
+      expect(right.angle().toNumber()).toBeCloseTo(0, 5);
+      expect(up.angle().toNumber()).toBeCloseTo(Math.PI / 2, 4);
+      expect(left.angle().toNumber()).toBeCloseTo(Math.PI, 4);
+    });
+
+    test('should create vector from angle and magnitude', () => {
+      const angle = Fixed.PI_4; // 45 degrees
+      const magnitude = new Fixed(2);
+      const vector = FixedVector2.fromAngle(angle, magnitude);
+
+      expect(vector.x.toNumber()).toBeCloseTo(Math.sqrt(2), 4);
+      expect(vector.y.toNumber()).toBeCloseTo(Math.sqrt(2), 4);
+      expect(vector.magnitude().toNumber()).toBeCloseTo(2, 4);
+    });
+
+    test('should create unit vector from angle', () => {
+      const angle = Fixed.PI_2; // 90 degrees
+      const vector = FixedVector2.fromAngle(angle);
+
+      expect(vector.x.toNumber()).toBeCloseTo(0, 4);
+      expect(vector.y.toNumber()).toBeCloseTo(1, 4);
+      expect(vector.magnitude().toNumber()).toBeCloseTo(1, 4);
     });
   });
 });

@@ -236,6 +236,154 @@ describe('Fixed', () => {
     });
   });
 
+  describe('Trigonometric Functions', () => {
+    test('should calculate sine correctly', () => {
+      expect(Fixed.ZERO.sin().toNumber()).toBeCloseTo(0, 5);
+      expect(Fixed.PI_2.sin().toNumber()).toBeCloseTo(1, 5);
+      expect(Fixed.PI.sin().toNumber()).toBeCloseTo(0, 4);
+
+      const angle = new Fixed(Math.PI / 6); // 30 degrees
+      expect(angle.sin().toNumber()).toBeCloseTo(0.5, 4);
+    });
+
+    test('should calculate cosine correctly', () => {
+      expect(Fixed.ZERO.cos().toNumber()).toBeCloseTo(1, 5);
+      expect(Fixed.PI_2.cos().toNumber()).toBeCloseTo(0, 4);
+      expect(Fixed.PI.cos().toNumber()).toBeCloseTo(-1, 4);
+
+      const angle = new Fixed(Math.PI / 3); // 60 degrees
+      expect(angle.cos().toNumber()).toBeCloseTo(0.5, 4);
+    });
+
+    test('should calculate tangent correctly', () => {
+      expect(Fixed.ZERO.tan().toNumber()).toBeCloseTo(0, 5);
+      expect(Fixed.PI_4.tan().toNumber()).toBeCloseTo(1, 4);
+
+      expect(() => Fixed.PI_2.tan()).toThrow('Tangent undefined');
+    });
+
+    test('should calculate arcsine correctly', () => {
+      expect(Fixed.ZERO.asin().toNumber()).toBeCloseTo(0, 5);
+      expect(Fixed.ONE.asin().toNumber()).toBeCloseTo(Math.PI / 2, 4);
+      expect(new Fixed(-1).asin().toNumber()).toBeCloseTo(-Math.PI / 2, 4);
+
+      expect(() => new Fixed(2).asin()).toThrow('Arcsine domain error');
+    });
+
+    test('should calculate arccosine correctly', () => {
+      expect(Fixed.ONE.acos().toNumber()).toBeCloseTo(0, 5);
+      expect(Fixed.ZERO.acos().toNumber()).toBeCloseTo(Math.PI / 2, 4);
+      expect(new Fixed(-1).acos().toNumber()).toBeCloseTo(Math.PI, 4);
+
+      expect(() => new Fixed(2).acos()).toThrow('Arccosine domain error');
+    });
+
+    test('should calculate arctangent correctly', () => {
+      expect(Fixed.ZERO.atan().toNumber()).toBeCloseTo(0, 5);
+      expect(Fixed.ONE.atan().toNumber()).toBeCloseTo(Math.PI / 4, 4);
+    });
+
+    test('should calculate atan2 correctly', () => {
+      expect(Fixed.atan2(Fixed.ONE, Fixed.ONE).toNumber()).toBeCloseTo(Math.PI / 4, 4);
+      expect(Fixed.atan2(Fixed.ONE, Fixed.ZERO).toNumber()).toBeCloseTo(Math.PI / 2, 4);
+      expect(Fixed.atan2(Fixed.ZERO, Fixed.ONE).toNumber()).toBeCloseTo(0, 5);
+
+      expect(() => Fixed.atan2(Fixed.ZERO, Fixed.ZERO)).toThrow('atan2 undefined');
+    });
+  });
+
+  describe('Mathematical Functions', () => {
+    test('should calculate floor correctly', () => {
+      expect(new Fixed(3.7).floor().toNumber()).toBe(3);
+      expect(new Fixed(-2.3).floor().toNumber()).toBe(-3);
+      expect(new Fixed(5).floor().toNumber()).toBe(5);
+    });
+
+    test('should calculate ceil correctly', () => {
+      expect(new Fixed(3.2).ceil().toNumber()).toBe(4);
+      expect(new Fixed(-2.7).ceil().toNumber()).toBe(-2);
+      expect(new Fixed(5).ceil().toNumber()).toBe(5);
+    });
+
+    test('should calculate round correctly', () => {
+      expect(new Fixed(3.4).round().toNumber()).toBe(3);
+      expect(new Fixed(3.6).round().toNumber()).toBe(4);
+      expect(new Fixed(-2.4).round().toNumber()).toBe(-2);
+      expect(new Fixed(-2.6).round().toNumber()).toBe(-3);
+    });
+
+    test('should calculate fractional part correctly', () => {
+      expect(new Fixed(3.7).frac().toNumber()).toBeCloseTo(0.7, 5);
+      expect(new Fixed(-2.3).frac().toNumber()).toBeCloseTo(0.7, 5); // -2.3 - (-3) = 0.7
+    });
+
+    test('should calculate power correctly', () => {
+      expect(new Fixed(2).pow(new Fixed(3)).toNumber()).toBeCloseTo(8, 5);
+      expect(new Fixed(4).pow(new Fixed(0.5)).toNumber()).toBeCloseTo(2, 4);
+      expect(new Fixed(5).pow(Fixed.ZERO).toNumber()).toBe(1);
+      expect(new Fixed(2).pow(new Fixed(-1)).toNumber()).toBeCloseTo(0.5, 5);
+    });
+
+    test('should calculate natural logarithm correctly', () => {
+      expect(Fixed.ONE.ln().toNumber()).toBeCloseTo(0, 5);
+      expect(Fixed.E.ln().toNumber()).toBeCloseTo(1, 4);
+      expect(new Fixed(Math.E * Math.E).ln().toNumber()).toBeCloseTo(2, 2); // Lower precision for complex calculations
+
+      expect(() => Fixed.ZERO.ln()).toThrow('Logarithm domain error');
+      expect(() => new Fixed(-1).ln()).toThrow('Logarithm domain error');
+    });
+
+    test('should calculate exponential correctly', () => {
+      expect(Fixed.ZERO.exp().toNumber()).toBeCloseTo(1, 5);
+      expect(Fixed.ONE.exp().toNumber()).toBeCloseTo(Math.E, 4);
+      expect(new Fixed(2).exp().toNumber()).toBeCloseTo(Math.E * Math.E, 4);
+    });
+
+    test('should calculate min and max correctly', () => {
+      const a = new Fixed(3);
+      const b = new Fixed(5);
+
+      expect(Fixed.min(a, b).equals(a)).toBe(true);
+      expect(Fixed.max(a, b).equals(b)).toBe(true);
+    });
+
+    test('should clamp values correctly', () => {
+      const min = new Fixed(0);
+      const max = new Fixed(10);
+
+      expect(new Fixed(-5).clamp(min, max).equals(min)).toBe(true);
+      expect(new Fixed(15).clamp(min, max).equals(max)).toBe(true);
+      expect(new Fixed(5).clamp(min, max).toNumber()).toBe(5);
+    });
+
+    test('should lerp correctly', () => {
+      const a = new Fixed(0);
+      const b = new Fixed(10);
+
+      expect(Fixed.lerp(a, b, Fixed.ZERO).equals(a)).toBe(true);
+      expect(Fixed.lerp(a, b, Fixed.ONE).equals(b)).toBe(true);
+      expect(Fixed.lerp(a, b, Fixed.HALF).toNumber()).toBe(5);
+    });
+
+    test('should calculate modulo correctly', () => {
+      // Basic modulo operations
+      expect(new Fixed(7).mod(new Fixed(3)).toNumber()).toBeCloseTo(1, 5);
+      expect(new Fixed(10).mod(new Fixed(4)).toNumber()).toBeCloseTo(2, 5);
+      expect(new Fixed(15).mod(new Fixed(5)).toNumber()).toBeCloseTo(0, 5);
+
+      // Negative numbers
+      expect(new Fixed(-7).mod(new Fixed(3)).toNumber()).toBeCloseTo(2, 5); // -7 mod 3 = 2
+      expect(new Fixed(7).mod(new Fixed(-3)).toNumber()).toBeCloseTo(-2, 5); // 7 mod -3 = -2
+
+      // Fractional modulo
+      expect(new Fixed(5.5).mod(new Fixed(2)).toNumber()).toBeCloseTo(1.5, 5);
+      expect(new Fixed(3.7).mod(new Fixed(1.2)).toNumber()).toBeCloseTo(0.1, 4);
+
+      // Error case
+      expect(() => new Fixed(5).mod(Fixed.ZERO)).toThrow('Modulo by zero');
+    });
+  });
+
   describe('Precision and Determinism', () => {
     test('should maintain precision in complex calculations', () => {
       const a = new Fixed(0.1);
